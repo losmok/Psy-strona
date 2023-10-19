@@ -24,63 +24,50 @@
         </form>
         <!-- SCRIPT -->
         <?php 
-            if (isset($_POST['login']) && isset($_POST['password']) && isset($_POST['rpassword'])) {
-                $conn = mysqli_connect("localhost","root","","psy");
-                $login = ($_POST['login']);
-                $haslo = ($_POST['password']);
-                $haslo2 = ($_POST['rpassword']);
-                if ($haslo != '' && $login != '' && $haslo2 != '') {
-                    $zapytanie = "SELECT login FROM `uzytkownicy`;";
-                    $res = mysqli_query($conn, $zapytanie);
-                    $name = (mysqli_fetch_row($res));
-                    if ($name[0] == $login) {
-                    echo "<p>Login znajduje się już w bazie danych</p>";
-                    } else {
-                        if ($haslo == $haslo2) {
-                            $haslo = SHA1($_POST['password']);
-                            $haslo2 = SHA1($_POST['rpassword']);
-                            $zapytanie2 = "INSERT INTO `uzytkownicy` (`id`, `login`, `haslo`) VALUES ('','$login','$haslo');";
-                            $res2 = mysqli_query($conn,$zapytanie2);
-                            echo "<p>Hasła są takie same, konto zostało dodane</p>";
-                        } else {
-                            echo "<p>Hasła nie są takie same</p>";
-                        }
-                    }
-                } else {
-                    echo "<p>Wypełni wszystkie pola</p>";
-                }
-               
-               
-               
-               
-               
-        
-                    
-            
+           <?php 
+           if (isset($_POST['submit'])) { // sprawdzanie czy formularz został kliknięty
+               if (
+                   empty($_POST['login']) &&
+                   empty($_POST['password']) && 
+                   empty($_POST['rpassword'])
+               ) { // sprawdzanie czy wszystkie pola zostały wypełnione
+                   echo "<p>Wypełni wszystkie pola</p>";
+               }
+           
+               $login = $_POST['login'];
+               $haslo = $_POST['password'];
+               $haslo2 = $_POST['rpassword'];
+           
+               if ($haslo != $haslo2) { // sprawdzanie czy hasła nie są takie same, jeżeli nie są wyświetl błąd i zakończ działanie aplikacji
+                   echo "<p>Hasła nie są takie same</p>";
+                   die;
+               } 
+           
+               $conn = mysqli_connect("localhost","root","","psy");
+               $zapytanie = "SELECT login FROM uzytkownicy WHERE login = '$login';"; // sprawdzanie czy taka nazwa użytkownika istnieje w bazie danych
+               $res = mysqli_query($conn, $zapytanie);
+               $res = mysqli_fetch_row($res);
+           
+               if ($res){ // sprawdź czy użytkownik o takim loginie istnieje w bazie danych jak nie wyświetl błąd
+                   echo "<p>Login znajduje się już w bazie danych</p>";
+                   die;
+               }
+           
+               $haslo = SHA1($haslo);
+               $zapytanie2 = "
+                   INSERT INTO uzytkownicy (login, haslo) 
+                   VALUES ('$login','$haslo');
+               ";
+               $res2 = mysqli_query($conn, $zapytanie2);
+           
+               if (!$res2) { // sprawdź czy dodało użytkownika do bazy jak nie wyświetl błąd
+                   echo "<p>Coś poszło nie tak!</p>";
+                   die;
+               }
+           
+               echo "<p>Hasła są takie same, konto zostało dodane</p>";
+           }
                 
-                
-                
-                
-                
-                
-                
-                // if ($haslo != '' && $login != '' && $haslo2 != '') {
-                    
-                //     if (mysqli_num_rows($res) > 0) {
-                //         echo "Login znajduje się w bazie danych, konto nie zostało dodane";
-                //     } else {
-                //         echo "W bazie danych nie ma takiego loginu";
-                //     }
-                // }
-                // else {
-                //     echo "<p>Wypełni wszystkie pola</p>";
-                // }
-            };
-
-
-
-
-            // mysqli_close($conn);
         ?>
     </div>
     <div class="right2">
